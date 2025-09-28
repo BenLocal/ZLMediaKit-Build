@@ -12,7 +12,7 @@ on:
         default: false
         required: false
   schedule:
-    - cron: "0 0 * * 0" # 每周日运行一次
+    - cron: "0 2 * * *"
 
 env:
   REGISTRY: ghcr.io
