@@ -38,7 +38,7 @@ jobs:
       - name: build zlmediakit package
         run: |
           chmod +x ./build.sh
-          sudo ./build.sh --platform ${{ matrix.platform }} --branch ${{ matrix.branch }}
+          ./build.sh --platform ${{ matrix.platform }} --branch ${{ matrix.branch }}
       - name: Create release
         id: create_release
         if: ${{ github.event_name == 'schedule' || github.event.inputs.doRelease == 'true' }}
