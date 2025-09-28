@@ -18,8 +18,9 @@ RUN wget -O libsrtp-2.5.0.tar.gz https://github.com/cisco/libsrtp/archive/refs/t
     ./configure --enable-openssl && \
     make -j $(nproc) && make install
 
-
-RUN git clone --depth=1 https://github.com/ZLMediaKit/ZLMediaKit.git && \
+ARG ARG_BRANCH=master
+ENV ARG_BRANCH=${ARG_BRANCH}
+RUN git clone --depth=1 -b ${ARG_BRANCH} https://github.com/ZLMediaKit/ZLMediaKit.git && \
     cd ZLMediaKit && git submodule update --init --recursive && \
     mkdir -p build release/linux/Release/
 

@@ -10,6 +10,11 @@ env:
 
 jobs:
   buildx:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [linux/amd64, linux/arm64, linux64, linuxarm64]
+        branch: [master, feature/transcode2]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,11 +26,21 @@ jobs:
       - name: prepare
         run: |
           sudo apt-get update && sudo apt-get install -y wget
-      - name: build linux/amd64 package
+      - name: build zlmediakit package
         run: |
           chmod +x ./build.sh
-          ./build.sh --platform linux/amd64
-      - name: build linux/arm64 package
+          ./build.sh --platform ${{ matrix.platform }} --branch ${{ matrix.branch }}
+      - name: Create release
+        id: create_release
         run: |
-          chmod +x ./build.sh
-          ./build.sh --platform linux/arm64
+          set -xe
+          shopt -s nullglob
+          RELDATE="$(date +'%Y-%m-%d %H:%M')"
+          NAME="Auto-Build $RELDATE"
+          TAGNAME="autobuild-$(date +'%Y-%m-%d-%H-%M')"
+          (cd artifacts && sha256sum *.{zip,tar.xz} > checksums.sha256)
+          gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.xz} artifacts/checksums.*
+          echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
+          echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
