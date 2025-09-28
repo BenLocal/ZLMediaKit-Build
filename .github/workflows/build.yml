@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/arm64, linux64, linuxarm64]
+        platform: [linux/amd64, linux/arm64]
         branch: [master, feature/transcode2]
     runs-on: ubuntu-latest
     steps:
