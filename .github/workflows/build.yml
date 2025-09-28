@@ -18,7 +18,7 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  buildx:
+  build_zlmediakit:
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +39,28 @@ jobs:
         run: |
           chmod +x ./build.sh
           ./build.sh --platform ${{ matrix.platform }} --branch ${{ matrix.branch }}
+      - name: Replace spaces in string
+        id: strs
+        run: |
+          SLUG="$(echo ${{ matrix.platform }} | tr '/' '_')-$(echo ${{ matrix.branch }} | tr '/' '_')"
+          echo "artifact_slug=${SLUG// /-}" >> $GITHUB_OUTPUT
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zlmediakit-${{ steps.strs.outputs.artifact_slug }}
+          overwrite: true
+          path: artifacts/*
+  release_zlmediakit:
+    needs: build_zlmediakit
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.doRelease == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: zlmediakit-*
+          merge-multiple: true
+          path: artifacts
       - name: Create release
         id: create_release
         if: ${{ github.event_name == 'schedule' || github.event.inputs.doRelease == 'true' }}
@@ -48,11 +70,9 @@ jobs:
           RELDATE="$(date +'%Y-%m-%d')"
           NAME="Auto-Build $RELDATE"
           TAGNAME="autobuild-$(date +'%Y-%m-%d')"
-          sudo chown -R $USER:$USER artifacts
           (cd artifacts && sha256sum *.{zip,tar.xz} > checksums.sha256)
           gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.xz} artifacts/checksums.*
           echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
           echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          GH_TOKEN: ${{ github.token }}

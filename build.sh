@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-OUTPUT_DIR="zlm/$BRANCH/$(echo $PLATFORM | tr '/' '_')"
+OUTPUT_DIR="zlm/$(echo $BRANCH | tr '/' '_')/$(echo $PLATFORM | tr '/' '_')"
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 echo "Building ZLMediaKit..."
@@ -43,7 +43,7 @@ docker buildx build --platform "$PLATFORM" \
         --build-arg ARG_BRANCH="$BRANCH" \
 		-t "zlmediakit:$TAG" -f "$DOCKERFILE" --output "$OUTPUT_DIR" .
 # to .tar.gz
-FILE_NAME="zlmediakit_$BRANCH_$(echo $PLATFORM | tr '/' '_')_$TAG".tar.gz
+FILE_NAME="zlmediakit_$(echo $BRANCH | tr '/' '_')_$(echo $PLATFORM | tr '/' '_')_$TAG".tar.gz
 echo "package to: $FILE_NAME"
 tar -czvf "$FILE_NAME" -C "$OUTPUT_DIR" .
 
