@@ -9,7 +9,7 @@ on:
       doRelease:
         description: "Publish new release"
         type: boolean
-        default: false
+        default: true
         required: false
   schedule:
     - cron: "0 0 * * 0" # 每周日运行一次
@@ -79,7 +79,7 @@ jobs:
           NAME="Auto-Build $RELDATE"
           TAGNAME="autobuild-$(date +'%Y-%m-%d')"
           (cd artifacts && sha256sum *.{zip,tar.gz} > checksums.sha256)
-          gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.gz} artifacts/checksums.*
+          gh release create "$TAGNAME" --target "main" --title "$NAME" artifacts/*.{zip,tar.gz} artifacts/checksums.*
           echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
           echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
         env:
