@@ -9,7 +9,7 @@ on:
       doRelease:
         description: "Publish new release"
         type: boolean
-        default: true
+        default: false
         required: false
   schedule:
     - cron: "0 0 * * 0" # 每周日运行一次
@@ -26,10 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [linux/amd64]
-        branch: [feature/transcode2]
-        # platform: [linux/amd64, linux/arm64]
-        # branch: [master, feature/transcode2]
+        platform: [linux/amd64, linux/arm64]
+        branch: [master, feature/transcode2]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
