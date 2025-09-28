@@ -22,8 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/arm64]
-        branch: [master, feature/transcode2]
+        platform: [linux/amd64]
+        branch: [master]
+        # platform: [linux/amd64, linux/arm64]
+        # branch: [master, feature/transcode2]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -70,8 +72,8 @@ jobs:
           RELDATE="$(date +'%Y-%m-%d')"
           NAME="Auto-Build $RELDATE"
           TAGNAME="autobuild-$(date +'%Y-%m-%d')"
-          (cd artifacts && sha256sum *.{zip,tar.xz} > checksums.sha256)
-          gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.xz} artifacts/checksums.*
+          (cd artifacts && sha256sum *.{zip,tar.gz} > checksums.sha256)
+          gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.gz} artifacts/checksums.*
           echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
           echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
         env:
