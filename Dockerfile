@@ -12,7 +12,7 @@ WORKDIR /opt/media
 
 # libsrtp
 # https://github.com/cisco/libsrtp/archive/refs/tags/v2.5.0.tar.gz
-RUN wget https://github.com/cisco/libsrtp/archive/refs/tags/v2.5.0.tar.gz && \
+RUN wget -O libsrtp-2.5.0.tar.gz https://github.com/cisco/libsrtp/archive/refs/tags/v2.5.0.tar.gz  && \
     tar -zxvf libsrtp-2.5.0.tar.gz && \
     cd libsrtp-2.5.0 && \
     ./configure --enable-openssl && \
