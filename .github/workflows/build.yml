@@ -49,9 +49,10 @@ jobs:
           NAME="Auto-Build $RELDATE"
           TAGNAME="autobuild-$(date +'%Y-%m-%d')"
           sudo chown -R $USER:$USER artifacts
-          (cd artifacts && sudo sha256sum *.{zip,tar.xz} > checksums.sha256)
+          (cd artifacts && sha256sum *.{zip,tar.xz} > checksums.sha256)
           sudo gh release create "$TAGNAME" --target "master" --title "$NAME" artifacts/*.{zip,tar.xz} artifacts/checksums.*
           echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
           echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
