@@ -17,6 +17,10 @@ on:
 env:
   REGISTRY: ghcr.io
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build_zlmediakit:
     strategy:
