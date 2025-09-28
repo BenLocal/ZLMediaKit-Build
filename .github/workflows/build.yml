@@ -1,0 +1,20 @@
+name: build
+
+jobs:
+  buildx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: build linux/amd64 package
+        run: |
+          chmod +x ./build.sh
+          ./build.sh linux/amd64
+      - name: build linux/arm64 package
+        run: |
+          chmod +x ./build.sh
+          ./build.sh linux/arm64
