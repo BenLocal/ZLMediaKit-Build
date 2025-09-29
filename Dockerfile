@@ -31,6 +31,7 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release \
     make -j $(nproc)
 
 FROM scratch AS export-stage
-COPY --from=stage1 /opt/media/ZLMediaKit/release/linux/Release/libmk_api.so bin/libmk_api.so
+COPY --from=stage1 /opt/media/ZLMediaKit/release/linux/Release/MediaServer bin/MediaServer
 COPY --from=stage1 /opt/media/ZLMediaKit/api/include/** include/
-COPY --from=stage1 /opt/media/ZLMediaKit/release/linux/Release/** lib/
+COPY --from=stage1 /opt/media/ZLMediaKit/release/linux/Release/*.so lib/
+COPY --from=stage1 /opt/media/ZLMediaKit/release/linux/Release/*.a lib/
