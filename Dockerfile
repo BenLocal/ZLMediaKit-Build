@@ -26,6 +26,7 @@ RUN git clone --depth=1 -b ${ARG_BRANCH} https://github.com/ZLMediaKit/ZLMediaKi
 
 WORKDIR /opt/media/ZLMediaKit/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_OBJCOPY=OFF \
     -DENABLE_WEBRTC=true \
     -DENABLE_FFMPEG=true .. && \
     make -j $(nproc)
