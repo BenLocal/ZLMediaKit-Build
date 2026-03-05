@@ -70,6 +70,7 @@ cd build
 
 echo "Building ZLMediaKit for macOS..."
 cmake -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_OSX_ARCHITECTURES="$CMAKE_ARCH" \
   -DENABLE_OBJCOPY=OFF \
   -DENABLE_WEBRTC=true \

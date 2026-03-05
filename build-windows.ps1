@@ -35,7 +35,7 @@ Push-Location $srcDir
 git submodule update --init --recursive
 
 Write-Host "Building ZLMediaKit for Windows..."
-cmake -S . -B build -A $cmakeArch -DCMAKE_BUILD_TYPE=Release -DENABLE_WEBRTC=OFF -DENABLE_FFMPEG=OFF
+cmake -S . -B build -A $cmakeArch -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DENABLE_WEBRTC=OFF -DENABLE_FFMPEG=OFF
 cmake --build build --config Release --parallel
 
 $releaseRoot = Get-ChildItem -Path (Join-Path $srcDir "release") -Directory -Recurse | Where-Object { $_.Name -eq "Release" } | Select-Object -First 1
