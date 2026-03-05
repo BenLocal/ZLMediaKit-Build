@@ -50,6 +50,16 @@ case "$ARCH" in
     ;;
 esac
 
+HOST_ARCH="$(uname -m)"
+if [[ "$ARCH_SLUG" == "amd64" && "$HOST_ARCH" != "x86_64" ]]; then
+  echo "当前主机架构是 $HOST_ARCH，无法稳定构建 macOS amd64。请使用 x86_64 runner（如 macos-13）。"
+  exit 1
+fi
+if [[ "$ARCH_SLUG" == "arm64" && "$HOST_ARCH" != "arm64" ]]; then
+  echo "当前主机架构是 $HOST_ARCH，无法稳定构建 macOS arm64。请使用 arm64 runner。"
+  exit 1
+fi
+
 OUTPUT_DIR="zlm/$(echo "$BRANCH" | tr '/' '_')/macos_${ARCH_SLUG}"
 FILE_NAME="zlmediakit_$(echo "$BRANCH" | tr '/' '_')_macos_${ARCH_SLUG}_${TAG}.tar.gz"
 
