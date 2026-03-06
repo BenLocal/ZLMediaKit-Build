@@ -41,7 +41,7 @@ echo "branch: $BRANCH"
 echo "output_dir: $OUTPUT_DIR"
 docker buildx build --platform "$PLATFORM" \
         --build-arg ARG_BRANCH="$BRANCH" \
-		-t "zlmediakit:$TAG" -f "$DOCKERFILE" --output "$OUTPUT_DIR" .
+		-t "zlmediakit:$TAG" -f "$DOCKERFILE" --output "$OUTPUT_DIR" . || exit 1
 # to .tar.gz
 FILE_NAME="zlmediakit_$(echo $BRANCH | tr '/' '_')_$(echo $PLATFORM | tr '/' '_')_$TAG".tar.gz
 echo "package to: $FILE_NAME"
