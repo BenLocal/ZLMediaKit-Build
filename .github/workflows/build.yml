@@ -92,7 +92,7 @@ jobs:
             runner: macos-13
           - arch: arm64
             runner: macos-latest
-        branch: [master, feature/transcode2]
+        branch: [master]
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
@@ -118,7 +118,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-        branch: [master, feature/transcode2]
+        branch: [master]
     runs-on: windows-latest
     steps:
       - name: Checkout
