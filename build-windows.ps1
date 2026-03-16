@@ -56,6 +56,7 @@ Write-Host "Building ZLMediaKit for Windows..."
 cmake -S . -B build -A $cmakeArch `
   -DCMAKE_BUILD_TYPE=Release `
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
+  -DOPENSSL_USE_STATIC_LIBS=ON `
   -DCMAKE_TOOLCHAIN_FILE="$vcpkgRoot/scripts/buildsystems/vcpkg.cmake" `
   -DVCPKG_TARGET_TRIPLET="$vcpkgTriplet" `
   -DBUILD_TESTING=OFF `
