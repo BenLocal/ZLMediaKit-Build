@@ -54,13 +54,21 @@ Write-Host "Installing OpenSSL via vcpkg ($vcpkgTriplet)..."
 if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed (exit $LASTEXITCODE)" }
 
 Write-Host "Building ZLMediaKit for Windows..."
-# Pass cmake args as single-quoted literals via splatting. A bare
-# `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` token gets mangled to "3" by PowerShell's
-# native-argument parsing (the ".5" is dropped), which CMake then rejects.
+# Pass CMAKE_POLICY_VERSION_MINIMUM via a CMake initial-cache (-C) file instead of
+# -D. PowerShell's native-argument parser reads the `3.5` in a bare
+# `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` token as a number and splits it into
+# `...=3` + `.5`, so CMake only ever sees "3" (and discards ".5" as a stray path)
+# and rejects it. Putting the value inside a .cmake file keeps the decimal off the
+# PowerShell command line entirely — CMake parses the file itself. The override is
+# required because ZLToolKit/ZLMediaKit declare
+# cmake_minimum_required(VERSION 3.1.3...3.26) and CMake 4.x dropped <3.5 policy compat.
+$policyCacheFile = Join-Path $workDir "policy-min.cmake"
+Set-Content -Path $policyCacheFile -Encoding ASCII -Value 'set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "" FORCE)'
+
 $cmakeArgs = @(
   '-S', '.', '-B', 'build', '-A', $cmakeArch,
+  '-C', $policyCacheFile,
   '-DCMAKE_BUILD_TYPE=Release',
-  '-DCMAKE_POLICY_VERSION_MINIMUM=3.5',
   '-DOPENSSL_USE_STATIC_LIBS=ON',
   "-DCMAKE_TOOLCHAIN_FILE=$vcpkgRoot/scripts/buildsystems/vcpkg.cmake",
   "-DVCPKG_TARGET_TRIPLET=$vcpkgTriplet",
