@@ -51,23 +51,32 @@ Write-Host "Installing OpenSSL via vcpkg ($vcpkgTriplet)..."
   "openssl:$vcpkgTriplet" `
   "ffmpeg:$vcpkgTriplet" `
   "libsrtp:$vcpkgTriplet"
+if ($LASTEXITCODE -ne 0) { throw "vcpkg install failed (exit $LASTEXITCODE)" }
 
 Write-Host "Building ZLMediaKit for Windows..."
-cmake -S . -B build -A $cmakeArch `
-  -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
-  -DOPENSSL_USE_STATIC_LIBS=ON `
-  -DCMAKE_TOOLCHAIN_FILE="$vcpkgRoot/scripts/buildsystems/vcpkg.cmake" `
-  -DVCPKG_TARGET_TRIPLET="$vcpkgTriplet" `
-  -DENABLE_TESTS=OFF `
-  -DENABLE_OPENSSL=ON `
-  -DENABLE_SRT=ON `
-  -DENABLE_WEBRTC=ON `
-  -DENABLE_FFMPEG=ON `
-  -DENABLE_API=ON
+# Pass cmake args as single-quoted literals via splatting. A bare
+# `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` token gets mangled to "3" by PowerShell's
+# native-argument parsing (the ".5" is dropped), which CMake then rejects.
+$cmakeArgs = @(
+  '-S', '.', '-B', 'build', '-A', $cmakeArch,
+  '-DCMAKE_BUILD_TYPE=Release',
+  '-DCMAKE_POLICY_VERSION_MINIMUM=3.5',
+  '-DOPENSSL_USE_STATIC_LIBS=ON',
+  "-DCMAKE_TOOLCHAIN_FILE=$vcpkgRoot/scripts/buildsystems/vcpkg.cmake",
+  "-DVCPKG_TARGET_TRIPLET=$vcpkgTriplet",
+  '-DENABLE_TESTS=OFF',
+  '-DENABLE_OPENSSL=ON',
+  '-DENABLE_SRT=ON',
+  '-DENABLE_WEBRTC=ON',
+  '-DENABLE_FFMPEG=ON',
+  '-DENABLE_API=ON'
+)
+cmake @cmakeArgs
+if ($LASTEXITCODE -ne 0) { throw "CMake configure failed (exit $LASTEXITCODE)" }
 
 # Build only runtime target to avoid test/api linkage issues in CI.
 cmake --build build --config Release --target MediaServer --parallel
+if ($LASTEXITCODE -ne 0) { throw "CMake build failed (exit $LASTEXITCODE)" }
 
 $releaseRoot = Get-ChildItem -Path (Join-Path $srcDir "release") -Directory -Recurse | Where-Object { $_.Name -eq "Release" } | Select-Object -First 1
 if (-not $releaseRoot) {
