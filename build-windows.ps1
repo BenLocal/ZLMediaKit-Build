@@ -59,7 +59,7 @@ cmake -S . -B build -A $cmakeArch `
   -DOPENSSL_USE_STATIC_LIBS=ON `
   -DCMAKE_TOOLCHAIN_FILE="$vcpkgRoot/scripts/buildsystems/vcpkg.cmake" `
   -DVCPKG_TARGET_TRIPLET="$vcpkgTriplet" `
-  -DBUILD_TESTING=OFF `
+  -DENABLE_TESTS=OFF `
   -DENABLE_OPENSSL=ON `
   -DENABLE_SRT=ON `
   -DENABLE_WEBRTC=ON `
