@@ -28,12 +28,19 @@ jobs:
       matrix:
         platform: [linux/amd64, linux/arm64]
         branch: [master, feature/transcode2]
-    runs-on: ubuntu-latest
+        # Build each arch on a native runner so docker buildx never emulates:
+        # foreign-arch QEMU segfaults glibc ldconfig (libc-bin trigger -> "qemu:
+        # uncaught target signal 11"), which broke the arm64 leg. ubuntu-24.04-arm
+        # is GA and free for public repos.
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: prepare
