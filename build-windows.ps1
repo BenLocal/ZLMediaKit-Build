@@ -32,6 +32,11 @@ New-Item -Path (Join-Path $rootDir "artifacts") -ItemType Directory -Force | Out
 Write-Host "Cloning ZLMediaKit branch: $Branch"
 git clone --depth=1 -b $Branch https://github.com/ZLMediaKit/ZLMediaKit.git $srcDir
 Push-Location $srcDir
+# ZLMediaKit's default .gitmodules points submodules at gitee.com, which rate-limits /
+# blocks CI runner IPs (401 -> git prompts for a username -> non-interactive failure).
+# The repo ships .gitmodules_github with the same submodules on GitHub; swap to it.
+Copy-Item .gitmodules_github .gitmodules -Force
+git submodule sync
 git submodule update --init --recursive
 
 if ($env:VCPKG_ROOT -and (Test-Path (Join-Path $env:VCPKG_ROOT "vcpkg.exe"))) {

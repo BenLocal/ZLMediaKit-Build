@@ -73,6 +73,11 @@ brew install cmake openssl ffmpeg srtp || true
 echo "Cloning ZLMediaKit branch: $BRANCH"
 git clone --depth=1 -b "$BRANCH" https://github.com/ZLMediaKit/ZLMediaKit.git "$SRC_DIR"
 cd "$SRC_DIR"
+# ZLMediaKit's default .gitmodules points submodules at gitee.com, which rate-limits /
+# blocks CI runner IPs (401 -> git prompts for a username -> non-interactive failure).
+# The repo ships .gitmodules_github with the same submodules on GitHub; swap to it.
+cp .gitmodules_github .gitmodules
+git submodule sync
 git submodule update --init --recursive
 
 mkdir -p build
