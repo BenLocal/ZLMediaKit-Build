@@ -1,9 +1,13 @@
 FROM debian:bullseye-slim AS stage1
 
+# ZLMediaKit only defines ENABLE_FFMPEG when pkg-config finds ALL of avutil/avcodec/swscale/
+# swresample/avfilter (CMakeLists.txt). libswresample-dev (NOT libresample-dev) and
+# libavfilter-dev are required, else -DENABLE_FFMPEG=true silently flips OFF and WebRTC
+# can't transcode AAC->Opus (no audio).
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential cmake git curl wget vim ca-certificates tzdata libssl-dev \
-    libavcodec-dev libavutil-dev libswscale-dev libresample-dev ffmpeg \
+    libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev ffmpeg \
     && apt-get clean
 
 RUN mkdir -p /opt/media
