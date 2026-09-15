@@ -1,12 +1,18 @@
-FROM debian:bullseye-slim AS stage1
+# Debian 11 (bullseye) went EOL on 2026-08-31, and its security pool has since been pulled
+# from deb.debian.org: the bullseye-security *index* is still served, so apt-get update
+# succeeds and then every .deb under /debian-security/pool/ 404s (libssl-dev, libav*-dev,
+# git-man, perl-modules...). Bookworm is the current supported base.
+FROM debian:bookworm-slim AS stage1
 
 # ZLMediaKit only defines ENABLE_FFMPEG when pkg-config finds ALL of avutil/avcodec/swscale/
 # swresample/avfilter (CMakeLists.txt). libswresample-dev (NOT libresample-dev) and
 # libavfilter-dev are required, else -DENABLE_FFMPEG=true silently flips OFF and WebRTC
-# can't transcode AAC->Opus (no audio).
+# can't transcode AAC->Opus (no audio). pkg-config is listed explicitly because nothing else
+# here depends on it: without it ZLMediaKit falls back to its bundled FindAV*.cmake modules,
+# and we'd rather stay on the primary pkg_check_modules path that carries real link flags.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential cmake git curl wget vim ca-certificates tzdata libssl-dev \
+    build-essential cmake git curl wget vim ca-certificates tzdata pkg-config libssl-dev \
     libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev ffmpeg \
     && apt-get clean
 
