@@ -68,7 +68,10 @@ mkdir -p "$WORK_DIR" "$ROOT_DIR/$OUTPUT_DIR" "$ROOT_DIR/artifacts"
 
 echo "Installing dependencies with brew..."
 brew update
-brew install cmake openssl ffmpeg srtp || true
+brew install cmake ffmpeg srtp || true
+# Pin OpenSSL 3: ZLToolKit is not yet compatible with OpenSSL 4.
+brew install openssl@3
+OPENSSL_PREFIX="$(brew --prefix openssl@3)"
 
 echo "Cloning ZLMediaKit branch: $BRANCH"
 git clone --depth=1 -b "$BRANCH" https://github.com/ZLMediaKit/ZLMediaKit.git "$SRC_DIR"
@@ -87,6 +90,10 @@ echo "Building ZLMediaKit for macOS..."
 cmake -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DOPENSSL_USE_STATIC_LIBS=ON \
+  -DOPENSSL_ROOT_DIR="$OPENSSL_PREFIX" \
+  -DOPENSSL_INCLUDE_DIR="$OPENSSL_PREFIX/include" \
+  -DOPENSSL_SSL_LIBRARY="$OPENSSL_PREFIX/lib/libssl.a" \
+  -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_PREFIX/lib/libcrypto.a" \
   -DCMAKE_OSX_ARCHITECTURES="$CMAKE_ARCH" \
   -DENABLE_OBJCOPY=OFF \
   -DENABLE_WEBRTC=true \
