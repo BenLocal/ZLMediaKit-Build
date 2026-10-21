@@ -37,6 +37,9 @@ RUN wget -O libsrtp-2.5.0.tar.gz https://github.com/cisco/libsrtp/archive/refs/t
 
 ARG ARG_BRANCH=master
 ENV ARG_BRANCH=${ARG_BRANCH}
+# false builds without FFmpeg (no WebRTC audio transcoding), so the libraries carry no
+# libav* soname and load next to whatever FFmpeg the consumer ships.
+ARG ARG_ENABLE_FFMPEG=true
 # Local fixes on top of upstream, applied in name order; see each patch's header.
 COPY patches /opt/media/patches
 # ZLMediaKit's default .gitmodules points submodules at gitee.com, which rate-limits /
@@ -55,7 +58,7 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release \
     -DOPENSSL_USE_STATIC_LIBS=ON \
     -DENABLE_OBJCOPY=OFF \
     -DENABLE_WEBRTC=true \
-    -DENABLE_FFMPEG=true .. && \
+    -DENABLE_FFMPEG=${ARG_ENABLE_FFMPEG} .. && \
     make -j $(nproc)
 
 FROM scratch AS export-stage

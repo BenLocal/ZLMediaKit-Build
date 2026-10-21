@@ -28,6 +28,12 @@ jobs:
       matrix:
         platform: [linux/amd64, linux/arm64]
         branch: [master, feature/transcode2]
+        # off adds *_noffmpeg packages (no libav* dependency) for consumers that ship
+        # their own FFmpeg; only master needs them.
+        ffmpeg: ['on', 'off']
+        exclude:
+          - branch: feature/transcode2
+            ffmpeg: 'off'
         # Build each arch on a native runner so docker buildx never emulates:
         # foreign-arch QEMU segfaults glibc ldconfig (libc-bin trigger -> "qemu:
         # uncaught target signal 11"), which broke the arm64 leg. ubuntu-24.04-arm
@@ -49,11 +55,11 @@ jobs:
       - name: build zlmediakit package
         run: |
           chmod +x ./build.sh
-          ./build.sh --platform ${{ matrix.platform }} --branch ${{ matrix.branch }}
+          ./build.sh --platform ${{ matrix.platform }} --branch ${{ matrix.branch }} --ffmpeg ${{ matrix.ffmpeg }}
       - name: Replace spaces in string
         id: strs
         run: |
-          SLUG="$(echo ${{ matrix.platform }} | tr '/' '_')-$(echo ${{ matrix.branch }} | tr '/' '_')"
+          SLUG="$(echo ${{ matrix.platform }} | tr '/' '_')-$(echo ${{ matrix.branch }} | tr '/' '_')-ffmpeg-${{ matrix.ffmpeg }}"
           echo "artifact_slug=${SLUG// /-}" >> $GITHUB_OUTPUT
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
