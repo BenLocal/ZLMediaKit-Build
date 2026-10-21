@@ -1,8 +1,15 @@
-# Debian 11 (bullseye) went EOL on 2026-08-31, and its security pool has since been pulled
-# from deb.debian.org: the bullseye-security *index* is still served, so apt-get update
-# succeeds and then every .deb under /debian-security/pool/ 404s (libssl-dev, libav*-dev,
-# git-man, perl-modules...). Bookworm is the current supported base.
-FROM debian:bookworm-slim AS stage1
+# Bullseye keeps the libraries at glibc 2.31 so they load on older targets (e.g. a Rockchip
+# board with glibc 2.33); bookworm's 2.36 raised the floor to GLIBC_2.34. Bullseye went EOL on
+# 2026-08-31 and deb.debian.org has pulled its security pool (the index is still served, so
+# apt-get update succeeds and then every .deb 404s), so read all three suites from
+# archive.debian.org, which keeps them permanently.
+FROM debian:bullseye-slim AS stage1
+
+RUN printf '%s\n' \
+        'deb http://archive.debian.org/debian bullseye main' \
+        'deb http://archive.debian.org/debian bullseye-updates main' \
+        'deb http://archive.debian.org/debian-security bullseye-security main' \
+        > /etc/apt/sources.list
 
 # ZLMediaKit only defines ENABLE_FFMPEG when pkg-config finds ALL of avutil/avcodec/swscale/
 # swresample/avfilter (CMakeLists.txt). libswresample-dev (NOT libresample-dev) and
