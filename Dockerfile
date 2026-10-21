@@ -30,6 +30,8 @@ RUN wget -O libsrtp-2.5.0.tar.gz https://github.com/cisco/libsrtp/archive/refs/t
 
 ARG ARG_BRANCH=master
 ENV ARG_BRANCH=${ARG_BRANCH}
+# Local fixes on top of upstream, applied in name order; see each patch's header.
+COPY patches /opt/media/patches
 # ZLMediaKit's default .gitmodules points submodules at gitee.com, which rate-limits /
 # blocks GitHub Actions runner IPs (401 -> git prompts for a username -> non-interactive
 # clone failure). The repo ships .gitmodules_github with the same submodules on GitHub;
@@ -38,6 +40,7 @@ RUN git clone --depth=1 -b ${ARG_BRANCH} https://github.com/ZLMediaKit/ZLMediaKi
     cd ZLMediaKit && \
     cp .gitmodules_github .gitmodules && git submodule sync && \
     git submodule update --init --recursive && \
+    git apply --verbose /opt/media/patches/*.patch && \
     mkdir -p build release/linux/Release/
 
 WORKDIR /opt/media/ZLMediaKit/build

@@ -38,6 +38,11 @@ Push-Location $srcDir
 Copy-Item .gitmodules_github .gitmodules -Force
 git submodule sync
 git submodule update --init --recursive
+# Local fixes on top of upstream, applied in name order; see each patch's header.
+foreach ($patch in Get-ChildItem (Join-Path $rootDir "patches") -Filter *.patch | Sort-Object Name) {
+  git apply --verbose $patch.FullName
+  if ($LASTEXITCODE -ne 0) { throw "Failed to apply $($patch.Name)" }
+}
 
 if ($env:VCPKG_ROOT -and (Test-Path (Join-Path $env:VCPKG_ROOT "vcpkg.exe"))) {
   $vcpkgRoot = $env:VCPKG_ROOT

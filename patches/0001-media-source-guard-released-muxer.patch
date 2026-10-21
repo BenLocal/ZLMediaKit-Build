@@ -1,0 +1,67 @@
+Guard media source queries against a released muxer
+
+A source can still be visited by mk_media_source_for_each while its
+MultiMediaSourceMuxer is being released. getTracks() then dereferenced the
+muxer without a check: older builds crashed on a null pointer (SIGSEGV in
+MediaSource::getTracks), current master throws MediaSourceEvent::NotImplemented
+from the interceptor fallback, which escapes the C API and aborts the process.
+totalReaderCount() hits the same NotImplemented fallback.
+
+- getTracks(): hold the muxer, and return no tracks when it is gone.
+- totalReaderCount(): fall back to this source's own readerCount().
+- mk_media_source_get_track(): fix the bounds check (`&&` -> `||`); the track
+  list can shrink between get_track_count and get_track.
+
+diff --git a/api/source/mk_events_objects.cpp b/api/source/mk_events_objects.cpp
+index 50d040b..1e42029 100644
+--- a/api/source/mk_events_objects.cpp
++++ b/api/source/mk_events_objects.cpp
+@@ -219,7 +219,8 @@ API_EXPORT mk_track API_CALL mk_media_source_get_track(const mk_media_source ctx
+     assert(ctx);
+     MediaSource *src = (MediaSource *)ctx;
+     auto tracks = src->getTracks(false);
+-    if (index < 0 && index >= tracks.size()) {
++    // The track list can shrink between mk_media_source_get_track_count and this call.
++    if (index < 0 || (size_t)index >= tracks.size()) {
+         return nullptr;
+     }
+     return (mk_track) new Track::Ptr(std::move(tracks[index]));
+diff --git a/src/Common/MediaSource.cpp b/src/Common/MediaSource.cpp
+index e957537..0f4a0e0 100644
+--- a/src/Common/MediaSource.cpp
++++ b/src/Common/MediaSource.cpp
+@@ -135,7 +135,19 @@ vector<Track::Ptr> MediaSource::getTracks(bool ready) const {
+     if (!listener) {
+         return vector<Track::Ptr>();
+     }
+-    return listener->getMuxer(const_cast<MediaSource &>(*this))->getTracks(ready);
++    // The muxer can be released while this source is still enumerable (e.g. from mk_media_source_for_each):
++    // an interceptor whose delegate expired falls back to MediaSourceEvent::getMuxer, which throws.
++    // Hold a strong reference and treat a missing muxer as "no tracks" instead of crashing.
++    std::shared_ptr<MultiMediaSourceMuxer> muxer;
++    try {
++        muxer = listener->getMuxer(const_cast<MediaSource &>(*this));
++    } catch (MediaSourceEvent::NotImplemented &) {
++        return vector<Track::Ptr>();
++    }
++    if (!muxer) {
++        return vector<Track::Ptr>();
++    }
++    return muxer->getTracks(ready);
+ }
+ 
+ void MediaSource::setListener(const std::weak_ptr<MediaSourceEvent> &listener){
+@@ -151,7 +163,12 @@ int MediaSource::totalReaderCount(){
+     if(!listener){
+         return readerCount();
+     }
+-    return listener->totalReaderCount(*this);
++    try {
++        return listener->totalReaderCount(*this);
++    } catch (MediaSourceEvent::NotImplemented &) {
++        // The delegate behind an interceptor is already released; only this source's own readers remain.
++        return readerCount();
++    }
+ }
+ 
+ MediaOriginType MediaSource::getOriginType() const {
