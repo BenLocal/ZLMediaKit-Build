@@ -40,8 +40,6 @@ ENV ARG_BRANCH=${ARG_BRANCH}
 # false builds without FFmpeg (no WebRTC audio transcoding), so the libraries carry no
 # libav* soname and load next to whatever FFmpeg the consumer ships.
 ARG ARG_ENABLE_FFMPEG=true
-# Local fixes on top of upstream, applied in name order; see each patch's header.
-COPY patches /opt/media/patches
 # ZLMediaKit's default .gitmodules points submodules at gitee.com, which rate-limits /
 # blocks GitHub Actions runner IPs (401 -> git prompts for a username -> non-interactive
 # clone failure). The repo ships .gitmodules_github with the same submodules on GitHub;
@@ -50,7 +48,6 @@ RUN git clone --depth=1 -b ${ARG_BRANCH} https://github.com/ZLMediaKit/ZLMediaKi
     cd ZLMediaKit && \
     cp .gitmodules_github .gitmodules && git submodule sync && \
     git submodule update --init --recursive && \
-    git apply --verbose /opt/media/patches/*.patch && \
     mkdir -p build release/linux/Release/
 
 WORKDIR /opt/media/ZLMediaKit/build

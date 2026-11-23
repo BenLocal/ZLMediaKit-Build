@@ -82,8 +82,6 @@ cd "$SRC_DIR"
 cp .gitmodules_github .gitmodules
 git submodule sync
 git submodule update --init --recursive
-# Local fixes on top of upstream, applied in name order; see each patch's header.
-git apply --verbose "$ROOT_DIR"/patches/*.patch
 
 mkdir -p build
 cd build
